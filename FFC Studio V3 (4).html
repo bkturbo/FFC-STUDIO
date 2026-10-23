@@ -1,0 +1,2338 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FFC Studio V3</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts for rich typography support -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;600&family=Roboto:wght@400;700&family=Playfair+Display:wght@400;700&family=Courier+Prime:wght@400;700&family=Cinzel:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        app: 'var(--color-app)',
+                        panel: 'var(--color-panel)',
+                        card: 'var(--color-card)',
+                        border: 'var(--color-border)',
+                        textMain: 'var(--color-text-main)',
+                        textMuted: 'var(--color-text-muted)',
+                        accent: '#6366f1',
+                        accentHover: '#4f46e5'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                        roboto: ['Roboto', 'sans-serif'],
+                        playfair: ['Playfair Display', 'serif'],
+                        mono: ['Courier Prime', 'monospace'],
+                        cinzel: ['Cinzel', 'serif'],
+                        pacifico: ['Pacifico', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root.dark {
+            --color-app: #09090b;
+            --color-panel: #18181b;
+            --color-card: #27272a;
+            --color-border: #3f3f46;
+            --color-text-main: #fafafa;
+            --color-text-muted: #a1a1aa;
+            --canvas-bg: #121214;
+            --canvas-dot: #27272a;
+            --timeline-bg: #09090b;
+            --timeline-sub: #0c0c0e;
+        }
+
+        :root.light {
+            --color-app: #f4f4f5;
+            --color-panel: #ffffff;
+            --color-card: #f1f1f3;
+            --color-border: #d4d4d8;
+            --color-text-main: #18181b;
+            --color-text-muted: #71717a;
+            --canvas-bg: #e4e4e7;
+            --canvas-dot: #d4d4d8;
+            --timeline-bg: #ffffff;
+            --timeline-sub: #f9f9fb;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-user-drag: none; }
+        body { margin: 0; overflow: hidden; background-color: var(--color-app); color: var(--color-text-main); touch-action: none; transition: background-color 0.2s, color 0.2s; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+        .canvas-bg {
+            background-color: var(--canvas-bg);
+            background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
+            background-size: 24px 24px;
+            box-shadow: 0 0 0 1px var(--color-border), 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        input, textarea, select { 
+            user-select: auto; 
+            background: var(--color-card) !important; 
+            border: 1px solid var(--color-border) !important; 
+            color: var(--color-text-main) !important; 
+            outline: none; 
+            border-radius: 6px; 
+            padding: 6px 10px;
+            font-size: 13px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { border-color: #6366f1 !important; }
+        input[type="color"] { padding: 0; width: 100%; height: 32px; cursor: pointer; border: 1px solid var(--color-border) !important; background: var(--color-card) !important; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+        input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: none; }
+        input[type="range"] { padding: 0; cursor: pointer; accent-color: #6366f1; }
+
+        .btn-icon {
+            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 8px;
+            color: var(--color-text-main); cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+        }
+        .btn-icon:hover { background: var(--color-border); color: var(--color-text-main); }
+        .btn-icon.active { background: rgba(99, 102, 241, 0.25); color: #818cf8; border-color: #6366f1; }
+
+        .panel-btn {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            color: var(--color-text-main);
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .panel-btn:hover { background: var(--color-border); color: var(--color-text-main); }
+        .panel-btn.primary { background: #6366f1; border-color: #6366f1; color: white; }
+        .panel-btn.primary:hover { background: #4f46e5; }
+        .panel-btn.danger { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
+        .panel-btn.danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+        .prop-grid { display: grid; grid-template-columns: 65px 1fr; gap: 8px; align-items: center; margin-bottom: 12px; font-size: 13px; }
+        .prop-label { color: var(--color-text-muted); font-weight: 500; }
+
+        .timeline-container { position: relative; width: max-content; min-width: 100%; height: 100%; background: var(--timeline-bg); }
+        .ruler-ticks { position: absolute; top: 0; left: 0; width: 100%; height: 28px; border-bottom: 1px solid var(--color-border); background: var(--color-panel); pointer-events: none; }
+        .ruler-tick { position: absolute; bottom: 0; width: 1px; height: 6px; background: var(--color-text-muted); }
+        .ruler-label { position: absolute; top: 2px; font-size: 10px; color: var(--color-text-muted); transform: translateX(-50%); font-family: monospace; }
+        
+        .playhead-wrapper { position: absolute; top: 0; bottom: 0; width: 1px; background: #ef4444; z-index: 50; pointer-events: none; }
+        .playhead-head { position: absolute; top: 0; left: -5px; width: 11px; height: 11px; background: #ef4444; border-radius: 2px; pointer-events: auto; cursor: ew-resize; }
+        .playhead-head::after { content: ''; position: absolute; bottom: -4px; left: 1px; border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-top: 5px solid #ef4444; }
+
+        .track-lane { position: relative; height: 40px; border-bottom: 1px solid var(--color-border); background: var(--timeline-sub); }
+        .keyframe { 
+            position: absolute; top: 50%; transform: translate(-50%, -50%) rotate(45deg);
+            width: 13px; height: 13px; border-radius: 2px;
+            background: var(--color-panel); border: 2px solid #818cf8; 
+            cursor: pointer; z-index: 10; transition: transform 0.1s, background-color 0.1s;
+            touch-action: none;
+        }
+        .keyframe:hover { transform: translate(-50%, -50%) rotate(45deg) scale(1.3); background: #6366f1; }
+        .keyframe.selected { background: #ffffff; border-color: #ffffff; box-shadow: 0 0 12px rgba(99,102,241,0.8); }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-sm antialiased">
+
+    <!-- Topbar -->
+    <header class="h-12 bg-panel border-b border-border flex items-center justify-between px-4 shrink-0 z-25 shadow-sm transition-colors">
+        <div class="flex items-center gap-2.5 text-indigo-500 font-bold tracking-wide text-base">
+            <i data-lucide="clapperboard" class="w-5 h-5"></i>
+            <span id="txtLogo">FFC Studio <span class="text-textMuted text-xs font-normal">V3.9</span></span>
+        </div>
+
+        <!-- Center Beta Badge -->
+        <div class="hidden md:flex items-center gap-2 bg-card border border-border px-3 py-1 rounded-full text-xs text-amber-500 shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="txtBetaBadge">Bu bir betadır. Bazı özellikler çalışmayabilir</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="btnNewPage" class="panel-btn" title="Yeni Sayfa">
+                <i data-lucide="file-plus" class="w-4 h-4"></i> <span id="txtNewPage">Yeni Sayfa</span>
+            </button>
+            <button id="btnSettings" class="panel-btn" title="Ayarlar">
+                <i data-lucide="settings" class="w-4 h-4"></i> <span id="txtSettings">Ayarlar</span>
+            </button>
+            <button id="btnSave" class="panel-btn" title="Projeyi İndir">
+                <i data-lucide="save" class="w-4 h-4"></i> <span id="txtSave">Kaydet</span>
+            </button>
+            <button id="btnOpen" class="panel-btn" title="Proje Dosyası Aç">
+                <i data-lucide="folder-open" class="w-4 h-4"></i> <span id="txtOpen">Aç</span>
+            </button>
+            <input type="file" id="fileOpenInput" accept=".json,application/json,text/plain" class="hidden">
+            <button id="btnRender" class="panel-btn primary">
+                <i data-lucide="video" class="w-4 h-4"></i> <span id="txtExport">Dışa Aktar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Context Menu Modal (Long Press / Right Click on Canvas or Layer) -->
+    <div id="contextMenu" class="fixed bg-panel border border-border shadow-2xl rounded-xl p-1.5 hidden z-50 w-48 text-xs">
+        <div id="ctxRename" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-card cursor-pointer font-medium text-textMain">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-indigo-500"></i> <span id="txtCtxRename">Yeniden Adlandır</span>
+        </div>
+        <div id="ctxGroup" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-card cursor-pointer font-medium text-textMain">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-500"></i> <span id="txtCtxGroup">Grup Yap</span>
+        </div>
+        <div class="h-px bg-border my-1"></div>
+        <div id="ctxDelete" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-red-500/15 cursor-pointer font-medium text-red-500">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> <span id="txtCtxDelete">Sil</span>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-panel border border-border p-6 rounded-xl w-96 text-left shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-border">
+                <h3 id="txtModalTitle" class="font-semibold text-base text-textMain">Stüdyo Ayarları</h3>
+                <button id="btnCloseSettings" class="text-textMuted hover:text-textMain"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Theme Mode -->
+                <div>
+                    <label id="txtThemeLabel" class="block text-xs font-medium text-textMuted mb-1.5">Görünüm Modu / Theme</label>
+                    <select id="themeSelect">
+                        <option value="dark">Karanlık Mod (Dark)</option>
+                        <option value="light">Aydınlık Mod (Light)</option>
+                    </select>
+                </div>
+
+                <!-- Language Selection -->
+                <div>
+                    <label id="txtLangLabel" class="block text-xs font-medium text-textMuted mb-1.5">Dil / Language / اللغة</label>
+                    <select id="languageSelect">
+                        <option value="tr">Türkçe</option>
+                        <option value="en">English (İngilizce)</option>
+                        <option value="de">Deutsch (Almanca)</option>
+                        <option value="ar">العربية (Arapça)</option>
+                        <option value="fr">Français (Fransızca)</option>
+                        <option value="es">Español (İspanyolca)</option>
+                        <option value="ru">Русский (Русский)</option>
+                        <option value="zh">中文 (Çince)</option>
+                        <option value="ja">日本語 (Japonca)</option>
+                    </select>
+                </div>
+
+                <!-- 3D Mode Toggle -->
+                <div class="pt-2 border-t border-border">
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="txt3dLabel" class="text-xs font-medium text-textMain">3D Modu (Render Motoru)</span>
+                        <input type="checkbox" id="toggle3dMode" class="w-4 h-4 cursor-pointer accent-indigo-500">
+                    </div>
+                    <p id="txt3dNotice" class="text-[11px] text-amber-500 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg hidden">
+                        ⚠️ Bu bir beta sürüm olduğu için 3D modu henüz çalışmaz.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button id="btnSaveSettings" class="panel-btn primary !w-full">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Progress Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-panel border border-border p-6 rounded-xl w-80 text-center shadow-2xl">
+            <h3 id="txtExportTitle" class="font-semibold text-base mb-2 text-textMain">Video Dışa Aktarılıyor</h3>
+            <p id="exportStatusText" class="text-xs text-textMuted mb-4">Animasyon kaydediliyor...</p>
+            <div class="w-full bg-card h-2.5 rounded-full overflow-hidden border border-border mb-4">
+                <div id="exportProgressBar" class="bg-indigo-500 h-full w-0 transition-all duration-100"></div>
+            </div>
+            <button id="btnCancelExport" class="panel-btn danger !w-full">İptal Et</button>
+        </div>
+    </div>
+
+    <!-- Custom Message/Confirm Modal -->
+    <div id="msgModal" class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-panel border border-border p-6 rounded-xl w-80 shadow-2xl relative">
+            <h3 id="msgTitle" class="font-semibold text-base mb-2 text-textMain"></h3>
+            <p id="msgText" class="text-xs text-textMuted mb-6 leading-relaxed"></p>
+            <div class="flex justify-end gap-3">
+                <button id="btnMsgCancel" class="panel-btn">İptal</button>
+                <button id="btnMsgOk" class="panel-btn primary">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="flex flex-1 overflow-hidden transition-colors">
+        
+        <!-- Toolbar (Left) -->
+        <aside class="w-16 bg-panel border-r border-border flex flex-col items-center py-3 gap-3 shrink-0 z-10 transition-colors">
+            <div class="btn-icon active" data-tool="select" title="Seç (V)"><i data-lucide="mouse-pointer-2" class="w-5 h-5"></i></div>
+            <div class="w-8 h-px bg-border my-0.5"></div>
+            <div class="btn-icon" data-tool="rect" title="Kare / Dikdörtgen (R)"><i data-lucide="square" class="w-5 h-5"></i></div>
+            <div class="btn-icon" data-tool="circle" title="Daire (C)"><i data-lucide="circle" class="w-5 h-5"></i></div>
+            <div class="btn-icon" data-tool="text" title="Metin (T)"><i data-lucide="type" class="w-5 h-5"></i></div>
+            <div class="btn-icon" data-tool="image" title="Fotoğraf Ekle (I)"><i data-lucide="image" class="w-5 h-5"></i></div>
+            <div class="btn-icon" data-tool="pencil" title="Serbest Çizim (P)"><i data-lucide="pencil" class="w-5 h-5"></i></div>
+            <div class="btn-icon" data-tool="eraser" title="Silgi (E)"><i data-lucide="eraser" class="w-5 h-5"></i></div>
+            <input type="file" id="imageUploadInput" accept="image/*" class="hidden">
+        </aside>
+
+        <!-- Canvas Area (Center) -->
+        <section class="flex-1 relative flex items-center justify-center overflow-hidden" id="workspaceArea">
+            <div id="canvasWrapper" class="relative canvas-bg rounded-xl overflow-hidden border border-border" style="width: 800px; height: 450px;">
+                <canvas id="mainCanvas" width="800" height="450" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                <canvas id="uiCanvas" width="800" height="450" class="absolute inset-0 w-full h-full cursor-default"></canvas>
+            </div>
+        </section>
+
+        <!-- Properties Panel (Right) -->
+        <aside class="w-80 bg-panel border-l border-border flex flex-col shrink-0 z-10 transition-colors">
+            <!-- Layers -->
+            <div class="flex-1 flex flex-col min-h-0 border-b border-border">
+                <div class="px-4 py-2.5 text-xs font-semibold text-textMuted uppercase tracking-wider bg-app flex justify-between items-center border-b border-border">
+                    <div class="flex items-center gap-2">
+                        <span id="txtLayersTitle">Katmanlar</span>
+                        <button id="btnGroupSelected" class="p-1 hover:bg-card rounded text-indigo-500" title="Grup Yap">
+                            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <span id="layerCount" class="text-[10px] bg-card border border-border px-1.5 py-0.5 rounded text-textMain font-mono">0</span>
+                </div>
+                <div id="layerList" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Layers injected here -->
+                </div>
+            </div>
+            
+            <!-- Properties -->
+            <div class="flex-[1.6] flex flex-col min-h-0">
+                <div class="px-4 py-2.5 text-xs font-semibold text-textMuted uppercase tracking-wider bg-app flex justify-between items-center border-b border-border">
+                    <span id="txtPropsTitle">Özellikler</span>
+                    <div class="flex gap-1">
+                        <button id="btnCopyObj" class="panel-btn !py-1 !px-2 !text-[11px] hidden" title="Kopyala (Ctrl+C)">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button id="btnDeleteObj" class="panel-btn danger !py-1 !px-2.5 !text-[11px] hidden" title="Nesneyi Sil">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> <span id="txtDelete">Sil</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="propsContainer" class="flex-1 overflow-y-auto p-4 hidden">
+                    <div class="prop-grid"><span class="prop-label" id="txtPropName">İsim</span><input type="text" id="propName"></div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-1">
+                        <div class="prop-grid !grid-cols-[20px_1fr]"><span class="prop-label">X</span><input type="number" id="propX"></div>
+                        <div class="prop-grid !grid-cols-[20px_1fr]"><span class="prop-label">Y</span><input type="number" id="propY"></div>
+                        <div class="prop-grid !grid-cols-[20px_1fr]"><span class="prop-label">W</span><input type="number" id="propW" min="1"></div>
+                        <div class="prop-grid !grid-cols-[20px_1fr]"><span class="prop-label">H</span><input type="number" id="propH" min="1"></div>
+                    </div>
+
+                    <div class="prop-grid"><span class="prop-label" id="txtPropRot">Dönüş</span><input type="number" id="propRot"></div>
+                    <div class="prop-grid"><span class="prop-label" id="txtPropOp">Opaklık</span><input type="number" id="propOp" min="0" max="1" step="0.1"></div>
+                    <div id="colorPropWrapper" class="prop-grid"><span class="prop-label" id="txtPropColor">Renk</span><input type="color" id="propFill"></div>
+                    
+                    <div id="rectProps" class="mt-3 pt-3 border-t border-border hidden">
+                        <div class="prop-grid"><span class="prop-label" id="txtPropRound">Yumuşaklık</span><input type="range" id="propRadiusRange" min="0" max="100" value="0"></div>
+                        <div class="prop-grid"><span class="prop-label">Değer</span><input type="number" id="propRadius" min="0" max="100" value="0"></div>
+                    </div>
+
+                    <div id="textProps" class="mt-3 pt-3 border-t border-border hidden">
+                        <div id="txtTextContent" class="text-xs text-textMuted mb-1.5 font-medium">Metin İçeriği</div>
+                        <textarea id="propText" rows="2" class="mb-3 resize-none"></textarea>
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <div class="prop-grid"><span class="prop-label" id="txtPropFontSz">Boyut</span><input type="number" id="propFontSize" min="8"></div>
+                            <div class="prop-grid"><span class="prop-label">Font</span>
+                                <select id="propFontFamily">
+                                    <option value="Inter">Inter (Sans)</option>
+                                    <option value="Poppins">Poppins</option>
+                                    <option value="Roboto">Roboto</option>
+                                    <option value="Playfair Display">Playfair (Serif)</option>
+                                    <option value="Courier Prime">Courier (Mono)</option>
+                                    <option value="Cinzel">Cinzel</option>
+                                    <option value="Pacifico">Pacifico</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Comic Neue">Comic Neue</option>
+                                    <option value="Lobster">Lobster</option>
+                                    <option value="Caveat">Caveat</option>
+                                    <option value="Oswald">Oswald</option>
+                                    <option value="Quicksand">Quicksand</option>
+                                    <option value="Montserrat">Montserrat</option>
+                                    <option value="Raleway">Raleway</option>
+                                    <option value="Ubuntu">Ubuntu</option>
+                                    <option value="Rubik">Rubik</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="noSelection" class="flex-1 flex items-center justify-center text-textMuted text-xs p-6 text-center leading-relaxed">
+                    Özelliklerini düzenlemek ve animasyon eklemek için sahneden veya katmanlardan bir nesne seçin.
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Timeline (Bottom) -->
+    <footer class="h-64 bg-panel border-t border-border flex flex-col shrink-0 z-20 transition-colors">
+        <!-- Timeline Controls -->
+        <div class="h-11 bg-app border-b border-border flex items-center px-4 gap-2 overflow-x-auto transition-colors">
+            <!-- Başa Sar -->
+            <button id="btnRestart" class="panel-btn" title="Başa Dön">
+                <i data-lucide="skip-back" class="w-4 h-4 text-indigo-500"></i> <span id="txtBtnRestart">Başa Sar</span>
+            </button>
+            <!-- Geri Al -->
+            <button id="btnStepBack" class="panel-btn" title="Bir Kare Geri">
+                <i data-lucide="chevron-left" class="w-4 h-4 text-indigo-500"></i> <span id="txtBtnBack">Geri Al</span>
+            </button>
+            <!-- Oynat / Durdur -->
+            <button id="btnPlay" class="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer shrink-0 shadow" title="Oynat / Durdur">
+                <i data-lucide="play" id="iconPlay" class="w-4 h-4 ml-0.5"></i>
+                <i data-lucide="pause" id="iconPause" class="w-4 h-4 hidden"></i>
+            </button>
+            <!-- Geriden Oyna -->
+            <button id="btnPlayReverse" class="panel-btn" title="Geriden Oynat">
+                <i data-lucide="rewind" class="w-4 h-4 text-indigo-500"></i> <span id="txtBtnRev">Geriden Oyna</span>
+            </button>
+            <!-- İlerlet -->
+            <button id="btnStepForward" class="panel-btn" title="Bir Kare İleri">
+                <i data-lucide="chevron-right" class="w-4 h-4 text-indigo-500"></i> <span id="txtBtnFwd">İlerlet</span>
+            </button>
+
+            <div class="font-mono text-indigo-500 bg-card px-3 py-1 rounded border border-border w-20 text-center text-xs font-semibold shadow-inner ml-2" id="timeDisplay">0.00s</div>
+            
+            <div class="w-px h-4 bg-border mx-2"></div>
+            
+            <button id="btnAddKey" class="panel-btn text-xs">
+                <i data-lucide="diamond" class="w-3.5 h-3.5 text-indigo-500"></i> <span id="txtAddKey">Keyframe Ekle</span>
+            </button>
+            <button id="btnDelKey" class="panel-btn danger text-xs hidden">
+                <i data-lucide="minus-square" class="w-3.5 h-3.5"></i> <span id="txtDelKey">Keyframe Sil</span>
+            </button>
+        </div>
+
+        <!-- Timeline Tracks -->
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Left Header -->
+            <div id="trackHeaders" class="w-52 bg-panel border-r border-border flex flex-col overflow-hidden shrink-0 transition-colors">
+                <div class="h-7 border-b border-border bg-app flex items-center px-3 gap-1.5 shadow-sm">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    <span class="text-[10px] font-bold text-textMuted tracking-wider uppercase">Keyframe Bölgesi</span>
+                </div>
+                <div id="trackHeaderList" class="flex-1 overflow-y-hidden"></div>
+            </div>
+            
+            <!-- Right Scrollable Area -->
+            <div id="timelineScrollArea" class="flex-1 overflow-auto relative">
+                <!-- Timeline Container -->
+                <div id="timelineContainer" class="timeline-container">
+                    
+                    <!-- Unified Playhead -->
+                    <div id="playhead" class="playhead-wrapper">
+                        <div id="playheadHead" class="playhead-head"></div>
+                    </div>
+
+                    <!-- Ruler Interactive Area -->
+                    <div id="rulerArea" class="absolute top-0 left-0 w-full h-7 z-40 cursor-ew-resize"></div>
+                    
+                    <!-- Ruler Visuals -->
+                    <div id="rulerTicks" class="ruler-ticks"></div>
+                    
+                    <!-- Track Lanes -->
+                    <div id="trackLanes" class="mt-7 w-full"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- MULTI-LANGUAGE DICTIONARY ---
+        const translations = {
+            tr: {
+                logo: "FFC Studio",
+                beta: "Bu bir betadır. Bazı özellikler çalışmayabilir",
+                newPage: "Yeni Sayfa",
+                settings: "Ayarlar",
+                save: "Kaydet",
+                open: "Aç",
+                export: "Dışa Aktar",
+                layers: "Katmanlar",
+                props: "Özellikler",
+                delete: "Sil",
+                name: "İsim",
+                rot: "Dönüş",
+                op: "Opaklık",
+                color: "Renk",
+                round: "Yumuşaklık",
+                textCont: "Metin İçeriği",
+                size: "Boyut",
+                restart: "Başa Sar",
+                back: "Geri Al",
+                rev: "Geriden Oyna",
+                fwd: "İlerlet",
+                addKey: "Keyframe Ekle",
+                delKey: "Keyframe Sil",
+                noSel: "Özelliklerini düzenlemek ve animasyon eklemek için sahneden veya katmanlardan bir nesne seçin.",
+                modalTitle: "Stüdyo Ayarları",
+                themeLabel: "Görünüm Modu / Theme",
+                langLabel: "Dil / Language",
+                mode3d: "3D Modu (Render Motoru)",
+                notice3d: "⚠️ Bu bir beta sürüm olduğu için 3D modu henüz çalışmaz.",
+                ctxRename: "Yeniden Adlandır",
+                ctxGroup: "Grup Yap",
+                ctxDelete: "Sil"
+            },
+            en: {
+                logo: "FFC Studio",
+                beta: "This is a beta. Some features may not work",
+                newPage: "New Page",
+                settings: "Settings",
+                save: "Save",
+                open: "Open",
+                export: "Export",
+                layers: "Layers",
+                props: "Properties",
+                delete: "Delete",
+                name: "Name",
+                rot: "Rotation",
+                op: "Opacity",
+                color: "Color",
+                round: "Smoothness",
+                textCont: "Text Content",
+                size: "Size",
+                restart: "Restart",
+                back: "Step Back",
+                rev: "Play Rev",
+                fwd: "Step Fwd",
+                addKey: "Add Keyframe",
+                delKey: "Del Keyframe",
+                noSel: "Select an object from the canvas or layers to edit properties and add animations.",
+                modalTitle: "Studio Settings",
+                themeLabel: "Theme Mode",
+                langLabel: "Language",
+                mode3d: "3D Mode (Render Engine)",
+                notice3d: "⚠️ 3D mode is not functional yet as this is a beta version.",
+                ctxRename: "Rename",
+                ctxGroup: "Group",
+                ctxDelete: "Delete"
+            },
+            de: {
+                logo: "FFC Studio",
+                beta: "Dies ist eine Beta. Einige Funktionen funktionieren möglicherweise nicht",
+                newPage: "Neue Seite",
+                settings: "Einstellungen",
+                save: "Speichern",
+                open: "Öffnen",
+                export: "Exportieren",
+                layers: "Ebenen",
+                props: "Eigenschaften",
+                delete: "Löschen",
+                name: "Name",
+                rot: "Drehung",
+                op: "Opazität",
+                color: "Farbe",
+                round: "Glätte",
+                textCont: "Textinhalt",
+                size: "Größe",
+                restart: "Neustart",
+                back: "Zurück",
+                rev: "Rückwärts",
+                fwd: "Vorwärts",
+                addKey: "Keyframe +",
+                delKey: "Keyframe -",
+                noSel: "Wählen Sie ein Objekt aus, um Eigenschaften zu bearbeiten.",
+                modalTitle: "Studio-Einstellungen",
+                themeLabel: "Darstellung",
+                langLabel: "Sprache",
+                mode3d: "3D-Modus (Render-Engine)",
+                notice3d: "⚠️ Der 3D-Modus ist in dieser Beta-Version noch nicht verfügbar.",
+                ctxRename: "Umbenennen",
+                ctxGroup: "Gruppieren",
+                ctxDelete: "Löschen"
+            },
+            ar: {
+                logo: "FFC Studio",
+                beta: "هذه نسخة تجريبية. قد لا تعمل بعض الميزات",
+                newPage: "صفحة جديدة",
+                settings: "الإعدادات",
+                save: "حفظ",
+                open: "فتح",
+                export: "تصدير",
+                layers: "الطبقات",
+                props: "الخصائص",
+                delete: "حذف",
+                name: "الاسم",
+                rot: "الدوران",
+                op: "الشفافية",
+                color: "اللون",
+                round: "النعومة",
+                textCont: "محتوى النص",
+                size: "الحجم",
+                restart: "البداية",
+                back: "رجوع",
+                rev: "عكسي",
+                fwd: "تقدم",
+                addKey: "إضافة مفتاح",
+                delKey: "حذف مفتاح",
+                noSel: "حدد عنصراً لتعديل خصائصه وإضافة الرسوم المتحركة.",
+                modalTitle: "إعدادات الاستوديو",
+                themeLabel: "وضع المظهر",
+                langLabel: "اللغة",
+                mode3d: "وضع ثلاثي الأبعاد (محرك العرض)",
+                notice3d: "⚠️ وضع 3D لا يعمل بعد لأنه نسخة تجريبية.",
+                ctxRename: "إعادة تسمية",
+                ctxGroup: "تجميع",
+                ctxDelete: "حذف"
+            },
+            fr: {
+                logo: "FFC Studio",
+                beta: "Ceci est une béta. Certaines fonctionnalités peuvent ne pas fonctionner",
+                newPage: "Nouvelle Page",
+                settings: "Paramètres",
+                save: "Enregistrer",
+                open: "Ouvrir",
+                export: "Exporter",
+                layers: "Calques",
+                props: "Propriétés",
+                delete: "Supprimer",
+                name: "Nom",
+                rot: "Rotation",
+                op: "Opacité",
+                color: "Couleur",
+                round: "Arrondi",
+                textCont: "Texte",
+                size: "Taille",
+                restart: "Recommencer",
+                back: "Reculer",
+                rev: "Inverser",
+                fwd: "Avancer",
+                addKey: "Ajouter Clé",
+                delKey: "Suppr Clé",
+                noSel: "Sélectionnez un objet pour modifier ses propriétés.",
+                modalTitle: "Paramètres du Studio",
+                themeLabel: "Thème",
+                langLabel: "Langue",
+                mode3d: "Mode 3D (Moteur de Rendu)",
+                notice3d: "⚠️ Le mode 3D ne fonctionne pas encore (version bêta).",
+                ctxRename: "Renommer",
+                ctxGroup: "Grouper",
+                ctxDelete: "Supprimer"
+            },
+            es: {
+                logo: "FFC Studio",
+                beta: "Esta es una versión beta. Algunas funciones pueden no funcionar",
+                newPage: "Nueva Página",
+                settings: "Ajustes",
+                save: "Guardar",
+                open: "Abrir",
+                export: "Exportar",
+                layers: "Capas",
+                props: "Propiedades",
+                delete: "Eliminar",
+                name: "Nombre",
+                rot: "Rotación",
+                op: "Opacidad",
+                color: "Color",
+                round: "Suavidad",
+                textCont: "Contenido de texto",
+                size: "Tamaño",
+                restart: "Reiniciar",
+                back: "Atrás",
+                rev: "Inverso",
+                fwd: "Adelante",
+                addKey: "Añadir Clave",
+                delKey: "Borrar Clave",
+                noSel: "Selecciona un objeto para editar propiedades.",
+                modalTitle: "Ajustes de Estudio",
+                themeLabel: "Modo de Tema",
+                langLabel: "Idioma",
+                mode3d: "Modo 3D (Motor de Render)",
+                notice3d: "⚠️ El modo 3D no está disponible todavía en esta beta.",
+                ctxRename: "Renombrar",
+                ctxGroup: "Agrupar",
+                ctxDelete: "Eliminar"
+            },
+            ru: {
+                logo: "FFC Studio",
+                beta: "Это бета-версия. Некоторые функции могут не работать",
+                newPage: "Новая страница",
+                settings: "Настройки",
+                save: "Сохранить",
+                open: "Открыть",
+                export: "Экспорт",
+                layers: "Слои",
+                props: "Свойства",
+                delete: "Удалить",
+                name: "Имя",
+                rot: "Вращение",
+                op: "Непрозрачность",
+                color: "Цвет",
+                round: "Скругление",
+                textCont: "Текст",
+                size: "Размер",
+                restart: "Сначала",
+                back: "Назад",
+                rev: "Назад",
+                fwd: "Вперед",
+                addKey: "Ключ +",
+                delKey: "Ключ -",
+                noSel: "Выберите объект для редактирования.",
+                modalTitle: "Настройки студии",
+                themeLabel: "Тема",
+                langLabel: "Язык",
+                mode3d: "3D Режим",
+                notice3d: "⚠️ 3D режим пока не работает в бета-версии.",
+                ctxRename: "Переименовать",
+                ctxGroup: "Группа",
+                ctxDelete: "Удалить"
+            },
+            zh: {
+                logo: "FFC Studio",
+                beta: "这是测试版。某些功能可能无法使用",
+                newPage: "新页面",
+                settings: "设置",
+                save: "保存",
+                open: "打开",
+                export: "导出",
+                layers: "图层",
+                props: "属性",
+                delete: "删除",
+                name: "名称",
+                rot: "旋转",
+                op: "不透明度",
+                color: "颜色",
+                round: "圆角",
+                textCont: "文本内容",
+                size: "大小",
+                restart: "重置",
+                back: "后退",
+                rev: "倒放",
+                fwd: "前进",
+                addKey: "添加关键帧",
+                delKey: "删除关键帧",
+                noSel: "选择画布中的对象以编辑属性。",
+                modalTitle: "工作室设置",
+                themeLabel: "主题模式",
+                langLabel: "语言",
+                mode3d: "3D 模式",
+                notice3d: "⚠️ 3D 模式目前为测试版，尚不可用。",
+                ctxRename: "重命名",
+                ctxGroup: "编组",
+                ctxDelete: "删除"
+            },
+            ja: {
+                logo: "FFC Studio",
+                beta: "ベータ版です。一部の機能が動作しない場合があります",
+                newPage: "新しいページ",
+                settings: "設定",
+                save: "保存",
+                open: "開く",
+                export: "書き出し",
+                layers: "レイヤー",
+                props: "プロパティ",
+                delete: "名前",
+                name: "名前",
+                rot: "回転",
+                op: "不透明度",
+                color: "色",
+                round: "角丸",
+                textCont: "テキスト内容",
+                size: "サイズ",
+                restart: "最初から",
+                back: "戻る",
+                rev: "逆再生",
+                fwd: "進む",
+                addKey: "キーフレーム追加",
+                delKey: "キーフレーム削除",
+                noSel: "オブジェクトを選択してプロパティを編集します。",
+                modalTitle: "スタジオ設定",
+                themeLabel: "テーマモード",
+                langLabel: "言語",
+                mode3d: "3D モード",
+                notice3d: "⚠️ ベータ版のため3Dモードはまだ機能しません。",
+                ctxRename: "名前を変更",
+                ctxGroup: "グループ化",
+                ctxDelete: "削除"
+            }
+        };
+
+        let currentLang = 'tr';
+
+        function showMessage(title, message, isConfirm = false, onConfirm = null) {
+            const modal = document.getElementById('msgModal');
+            document.getElementById('msgTitle').textContent = title;
+            document.getElementById('msgText').textContent = message;
+            
+            const btnCancel = document.getElementById('btnMsgCancel');
+            const btnOk = document.getElementById('btnMsgOk');
+            
+            if (isConfirm) {
+                btnCancel.classList.remove('hidden');
+                btnOk.className = 'panel-btn danger';
+                btnOk.textContent = 'Evet';
+            } else {
+                btnCancel.classList.add('hidden');
+                btnOk.className = 'panel-btn primary';
+                btnOk.textContent = 'Tamam';
+            }
+
+            btnCancel.onclick = () => modal.classList.add('hidden');
+            btnOk.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+            
+            modal.classList.remove('hidden');
+        }
+
+        function updateLanguage(lang) {
+            currentLang = translations[lang] ? lang : 'tr';
+            const t = translations[currentLang];
+
+            document.getElementById('txtBetaBadge').textContent = t.beta;
+            document.getElementById('txtNewPage').textContent = t.newPage;
+            document.getElementById('txtSettings').textContent = t.settings;
+            document.getElementById('txtSave').textContent = t.save;
+            document.getElementById('txtOpen').textContent = t.open;
+            document.getElementById('txtExport').textContent = t.export;
+            document.getElementById('txtLayersTitle').textContent = t.layers;
+            document.getElementById('txtPropsTitle').textContent = t.props;
+            document.getElementById('txtDelete').textContent = t.delete;
+            document.getElementById('txtPropName').textContent = t.name;
+            document.getElementById('txtPropRot').textContent = t.rot;
+            document.getElementById('txtPropOp').textContent = t.op;
+            document.getElementById('txtPropColor').textContent = t.color;
+            document.getElementById('txtPropRound').textContent = t.round;
+            document.getElementById('txtTextContent').textContent = t.textCont;
+            document.getElementById('txtPropFontSz').textContent = t.size;
+            document.getElementById('txtBtnRestart').textContent = t.restart;
+            document.getElementById('txtBtnBack').textContent = t.back;
+            document.getElementById('txtBtnRev').textContent = t.rev;
+            document.getElementById('txtBtnFwd').textContent = t.fwd;
+            document.getElementById('txtAddKey').textContent = t.addKey;
+            document.getElementById('txtDelKey').textContent = t.delKey;
+            document.getElementById('noSelection').textContent = t.noSel;
+            document.getElementById('txtModalTitle').textContent = t.modalTitle;
+            document.getElementById('txtThemeLabel').textContent = t.themeLabel;
+            document.getElementById('txtLangLabel').textContent = t.langLabel;
+            document.getElementById('txt3dLabel').textContent = t.mode3d;
+            document.getElementById('txt3dNotice').textContent = t.notice3d;
+            document.getElementById('txtCtxRename').textContent = t.ctxRename;
+            document.getElementById('txtCtxGroup').textContent = t.ctxGroup;
+            document.getElementById('txtCtxDelete').textContent = t.ctxDelete;
+        }
+
+        // --- 1. CORE ARCHITECTURE & STATE ---
+        const UI = {
+            mainCanvas: document.getElementById('mainCanvas'),
+            uiCanvas: document.getElementById('uiCanvas'),
+            ctx: document.getElementById('mainCanvas').getContext('2d'),
+            uiCtx: document.getElementById('uiCanvas').getContext('2d'),
+            timeDisplay: document.getElementById('timeDisplay'),
+            playhead: document.getElementById('playhead')
+        };
+
+        const state = {
+            objects: [],
+            duration: 10,
+            time: 0,
+            playing: false,
+            playDirection: 1,
+            zoom: 120,
+            selectedId: null,
+            selectedIds: [],
+            selectedKeyId: null,
+            tool: 'select',
+            drag: null,
+            clipboard: null,
+            snapGuides: []
+        };
+
+        const imageCache = new Map();
+        lucide.createIcons();
+
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const roundTime = (t) => Math.round(t * 100) / 100;
+
+        function createObject(type, x, y, extraData = {}) {
+            return {
+                id: generateId(),
+                type: type,
+                name: (type === 'rect' ? 'Kare' : type === 'circle' ? 'Daire' : type === 'text' ? 'Metin' : type === 'pencil' ? 'Çizgi' : type === 'eraser' ? 'Silgi' : 'Fotoğraf') + ' ' + (state.objects.length + 1),
+                base: {
+                    x: x - (type === 'text' ? 100 : 50), 
+                    y: y - (type === 'text' ? 25 : 50), 
+                    w: type === 'text' ? 200 : 100, 
+                    h: type === 'text' ? 50 : 100, 
+                    r: 0, o: 1, 
+                    radius: 0,
+                    fill: type === 'text' ? '#fafafa' : '#6366f1', 
+                    text: type === 'text' ? 'FFC Studio V3' : '',
+                    fontSize: 36,
+                    fontFamily: 'Inter',
+                    points: type === 'pencil' ? [[0, 0]] : null,
+                    ...extraData
+                },
+                keys: []
+            };
+        }
+
+        function groupSelectedObjects() {
+            if (state.selectedIds.length < 2) return;
+            const groupName = 'Grup ' + (state.objects.filter(o => o.isGroup).length + 1);
+            
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            const groupedObjects = state.selectedIds.map(id => state.objects.find(o => o.id === id)).filter(Boolean);
+            
+            groupedObjects.forEach(obj => {
+                const p = getPropsAtTime(obj, state.time);
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x + p.w);
+                maxY = Math.max(maxY, p.y + p.h);
+            });
+
+            // For simplicity in this studio, grouping combines them into a virtual group or tags them
+            // Let's create a parent group container object
+            const groupObj = {
+                id: generateId(),
+                type: 'group',
+                name: groupName,
+                isGroup: true,
+                childrenIds: state.selectedIds,
+                base: { x: minX, y: minY, w: maxX - minX, h: maxY - minY, r: 0, o: 1, fill: '#6366f1' },
+                keys: []
+            };
+
+            state.objects.push(groupObj);
+            state.selectedId = groupObj.id;
+            state.selectedIds = [groupObj.id];
+            updateAllUI();
+        }
+
+        function copySelectedObject() {
+            const obj = getSelectedObj();
+            if (!obj) return;
+            state.clipboard = JSON.parse(JSON.stringify(obj));
+        }
+
+        function pasteObject() {
+            if (!state.clipboard) return;
+            const newObj = JSON.parse(JSON.stringify(state.clipboard));
+            newObj.id = generateId();
+            newObj.name = newObj.name + ' (Kopya)';
+            
+            ['base', ...newObj.keys.map(k => k.props)].forEach(p => {
+                p.x += 20;
+                p.y += 20;
+            });
+
+            state.objects.push(newObj);
+            state.selectedId = newObj.id;
+            state.selectedIds = [newObj.id];
+            updateAllUI();
+        }
+
+        // --- 2. ANIMATION ENGINE ---
+        function getPropsAtTime(obj, time) {
+            if (!obj.keys || obj.keys.length === 0) return { ...obj.base };
+            
+            const keys = obj.keys;
+            if (time <= keys[0].t) return { ...keys[0].props };
+            if (time >= keys[keys.length - 1].t) return { ...keys[keys.length - 1].props };
+
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (time >= keys[i].t && time < keys[i + 1].t) {
+                    const k1 = keys[i], k2 = keys[i + 1];
+                    const progress = (time - k1.t) / (k2.t - k1.t);
+                    const ease = progress * progress * (3 - 2 * progress);
+                    
+                    const res = {};
+                    ['x', 'y', 'w', 'h', 'r', 'o', 'radius', 'fontSize'].forEach(p => {
+                        res[p] = k1.props[p] + (k2.props[p] - k1.props[p]) * ease;
+                    });
+                    res.fill = k1.props.fill;
+                    res.text = k1.props.text;
+                    res.fontFamily = k1.props.fontFamily || 'Inter';
+                    res.src = k1.props.src || '';
+                    res.points = k1.props.points || null;
+                    return res;
+                }
+            }
+            return { ...obj.base };
+        }
+
+        function setKeyframe(obj, time, propsToSave) {
+            const t = roundTime(time);
+            const existingIndex = obj.keys.findIndex(k => k.t === t);
+            
+            const safeProps = {
+                x: propsToSave.x, y: propsToSave.y, w: propsToSave.w, h: propsToSave.h,
+                r: propsToSave.r, o: propsToSave.o, radius: propsToSave.radius || 0, fill: propsToSave.fill,
+                text: propsToSave.text, fontSize: propsToSave.fontSize, fontFamily: propsToSave.fontFamily || 'Inter', src: propsToSave.src || '', points: propsToSave.points || null
+            };
+
+            if (existingIndex !== -1) {
+                obj.keys[existingIndex].props = safeProps;
+            } else {
+                obj.keys.push({ t: t, props: safeProps });
+                obj.keys.sort((a, b) => a.t - b.t);
+            }
+            if (obj.keys.length > 0 && t === obj.keys[0].t) {
+                obj.base = { ...safeProps };
+            }
+        }
+
+        const getSelectedObj = () => state.objects.find(o => o.id === state.selectedId);
+
+        // --- 3. RENDERING ENGINE ---
+        function renderCanvas(targetCtx = UI.ctx, clear = true, customTime = null) {
+            const w = UI.mainCanvas.width;
+            const h = UI.mainCanvas.height;
+            const renderTime = customTime !== null ? customTime : state.time;
+            
+            if (clear) {
+                targetCtx.clearRect(0, 0, w, h);
+            }
+
+            state.objects.forEach(obj => {
+                if (obj.isGroup) return; // groups render children
+                const p = getPropsAtTime(obj, renderTime);
+                
+                targetCtx.save();
+                targetCtx.globalAlpha = Math.max(0, Math.min(1, p.o));
+                targetCtx.translate(p.x + p.w / 2, p.y + p.h / 2);
+                targetCtx.rotate(p.r * Math.PI / 180);
+
+                if (obj.type === 'image') {
+                    let img = imageCache.get(obj.id);
+                    if (!img && p.src) {
+                        img = new Image();
+                        img.src = p.src;
+                        imageCache.set(obj.id, img);
+                    }
+                    if (img && img.complete) {
+                        targetCtx.drawImage(img, -p.w / 2, -p.h / 2, p.w, p.h);
+                    } else {
+                        targetCtx.fillStyle = '#71717a';
+                        targetCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                        targetCtx.fillStyle = '#ffffff';
+                        targetCtx.font = '12px Inter, sans-serif';
+                        targetCtx.textAlign = 'center';
+                        targetCtx.textBaseline = 'middle';
+                        targetCtx.fillText('Görsel', 0, 0);
+                    }
+                } else if (obj.type === 'pencil' && p.points && p.points.length > 0) {
+                    targetCtx.strokeStyle = p.fill;
+                    targetCtx.lineWidth = 4;
+                    targetCtx.lineCap = 'round';
+                    targetCtx.lineJoin = 'round';
+                    targetCtx.beginPath();
+                    p.points.forEach((pt, idx) => {
+                        const px = pt[0] - p.w / 2;
+                        const py = pt[1] - p.h / 2;
+                        if (idx === 0) targetCtx.moveTo(px, py);
+                        else targetCtx.lineTo(px, py);
+                    });
+                    targetCtx.stroke();
+                } else {
+                    targetCtx.fillStyle = p.fill;
+                    if (obj.type === 'rect') {
+                        targetCtx.beginPath();
+                        targetCtx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, Math.min(p.radius || 0, Math.min(p.w, p.h) / 2));
+                        targetCtx.fill();
+                    } else if (obj.type === 'circle') {
+                        targetCtx.beginPath();
+                        targetCtx.ellipse(0, 0, Math.max(1, p.w / 2), Math.max(1, p.h / 2), 0, 0, Math.PI * 2);
+                        targetCtx.fill();
+                    } else if (obj.type === 'text') {
+                        const fontName = p.fontFamily || 'Inter';
+                        targetCtx.font = `600 ${p.fontSize}px "${fontName}", sans-serif`;
+                        targetCtx.textBaseline = 'middle';
+                        targetCtx.textAlign = 'center';
+                        targetCtx.fillText(p.text, 0, 0, p.w);
+                    }
+                }
+                targetCtx.restore();
+            });
+        }
+
+        // --- 4. UI SYNCHRONIZATION ---
+        function updateAllUI() {
+            renderCanvas(UI.ctx, true);
+            
+            UI.uiCtx.clearRect(0, 0, UI.uiCanvas.width, UI.uiCanvas.height);
+
+            // Draw Smart Guides on UI Canvas
+            if (state.snapGuides && state.snapGuides.length > 0) {
+                UI.uiCtx.save();
+                UI.uiCtx.strokeStyle = '#ec4899';
+                UI.uiCtx.lineWidth = 1;
+                UI.uiCtx.setLineDash([4, 4]);
+                state.snapGuides.forEach(g => {
+                    UI.uiCtx.beginPath();
+                    UI.uiCtx.moveTo(g.x1, g.y1);
+                    UI.uiCtx.lineTo(g.x2, g.y2);
+                    UI.uiCtx.stroke();
+                });
+                UI.uiCtx.restore();
+            }
+
+            // Draw selection box or multi-selection bounding box
+            if (!state.playing) {
+                if (state.selectedIds && state.selectedIds.length > 1) {
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    state.selectedIds.forEach(id => {
+                        const obj = state.objects.find(o => o.id === id);
+                        if (obj) {
+                            const p = getPropsAtTime(obj, state.time);
+                            minX = Math.min(minX, p.x);
+                            minY = Math.min(minY, p.y);
+                            maxX = Math.max(maxX, p.x + p.w);
+                            maxY = Math.max(maxY, p.y + p.h);
+                        }
+                    });
+                    if (minX !== Infinity) {
+                        UI.uiCtx.save();
+                        UI.uiCtx.strokeStyle = '#ec4899';
+                        UI.uiCtx.lineWidth = 1.5;
+                        UI.uiCtx.strokeRect(minX - 4, minY - 4, (maxX - minX) + 8, (maxY - minY) + 8);
+                        UI.uiCtx.restore();
+                    }
+                } else if (state.selectedId) {
+                    const obj = getSelectedObj();
+                    if (obj) {
+                        const p = getPropsAtTime(obj, state.time);
+                        UI.uiCtx.save();
+                        UI.uiCtx.translate(p.x + p.w / 2, p.y + p.h / 2);
+                        UI.uiCtx.rotate(p.r * Math.PI / 180);
+                        
+                        UI.uiCtx.strokeStyle = '#6366f1';
+                        UI.uiCtx.lineWidth = 1.5;
+                        
+                        if (obj.type === 'circle') {
+                            UI.uiCtx.strokeRect(-p.w / 2 - 4, -p.h / 2 - 4, p.w + 8, p.h + 8);
+                        } else if (obj.type === 'pencil' && p.points) {
+                            UI.uiCtx.strokeRect(-p.w/2 - 4, -p.h/2 - 4, p.w + 8, p.h + 8);
+                        } else {
+                            UI.uiCtx.strokeRect(-p.w / 2 - 2, -p.h / 2 - 2, p.w + 4, p.h + 4);
+                        }
+
+                        UI.uiCtx.fillStyle = '#ffffff';
+                        const hs = 4.5;
+                        [[-p.w / 2, -p.h / 2], [p.w / 2, -p.h / 2], [-p.w / 2, p.h / 2], [p.w / 2, p.h / 2]].forEach(c => {
+                            UI.uiCtx.fillRect(c[0] - hs, c[1] - hs, hs*2, hs*2);
+                            UI.uiCtx.strokeRect(c[0] - hs, c[1] - hs, hs*2, hs*2);
+                        });
+                        UI.uiCtx.beginPath();
+                        UI.uiCtx.moveTo(0, -p.h / 2);
+                        UI.uiCtx.lineTo(0, -p.h / 2 - 22);
+                        UI.uiCtx.stroke();
+                        UI.uiCtx.beginPath();
+                        UI.uiCtx.arc(0, -p.h / 2 - 22, 5, 0, Math.PI * 2);
+                        UI.uiCtx.fill();
+                        UI.uiCtx.stroke();
+                        UI.uiCtx.restore();
+                    }
+                }
+            }
+
+            // Draw selection box overlay if dragging selection marquee
+            if (state.drag?.mode === 'marquee') {
+                const m = state.drag;
+                UI.uiCtx.save();
+                UI.uiCtx.strokeStyle = '#6366f1';
+                UI.uiCtx.fillStyle = 'rgba(99, 102, 241, 0.1)';
+                UI.uiCtx.lineWidth = 1;
+                UI.uiCtx.setLineDash([3, 3]);
+                const rx = Math.min(m.startX, m.currX);
+                const ry = Math.min(m.startY, m.currY);
+                const rw = Math.abs(m.currX - m.startX);
+                const rh = Math.abs(m.currY - m.startY);
+                UI.uiCtx.fillRect(rx, ry, rw, rh);
+                UI.uiCtx.strokeRect(rx, ry, rw, rh);
+                UI.uiCtx.restore();
+            }
+
+            updatePlayhead();
+            renderTimeline();
+            renderLayers();
+            updatePropertiesPanel();
+            
+            document.querySelectorAll('[data-tool]').forEach(el => {
+                el.classList.toggle('active', el.dataset.tool === state.tool);
+            });
+        }
+
+        function updatePlayhead() {
+            UI.timeDisplay.textContent = state.time.toFixed(2) + 's';
+            UI.playhead.style.left = (state.time * state.zoom) + 'px';
+        }
+
+        function renderLayers() {
+            const list = document.getElementById('layerList');
+            list.innerHTML = '';
+            document.getElementById('layerCount').textContent = state.objects.length;
+
+            [...state.objects].reverse().forEach(obj => {
+                const isSelected = state.selectedIds.includes(obj.id);
+                const el = document.createElement('div');
+                el.className = `flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer text-xs font-medium transition-colors ${isSelected ? 'bg-indigo-500/20 text-indigo-500 border border-indigo-500/30 font-bold' : 'hover:bg-card text-textMain border border-transparent'}`;
+                
+                const icon = obj.isGroup ? 'layers' : (obj.type === 'text' ? 'type' : (obj.type === 'circle' ? 'circle' : obj.type === 'image' ? 'image' : obj.type === 'pencil' ? 'pencil' : obj.type === 'eraser' ? 'eraser' : 'square'));
+                
+                el.innerHTML = `
+                    <i data-lucide="${icon}" class="w-3.5 h-3.5 shrink-0"></i> 
+                    <span class="truncate flex-1 layer-name-span">${obj.name}</span>
+                `;
+                
+                const nameSpan = el.querySelector('.layer-name-span');
+                nameSpan.ondblclick = (e) => {
+                    e.stopPropagation();
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = obj.name;
+                    input.className = 'w-full py-0.5 px-1 bg-card border border-indigo-500 text-xs rounded';
+                    nameSpan.replaceWith(input);
+                    input.focus();
+                    input.select();
+                    const saveNewName = () => { if (input.value.trim()) obj.name = input.value.trim(); updateAllUI(); };
+                    input.onblur = saveNewName;
+                    input.onkeydown = (ev) => { if (ev.key === 'Enter') saveNewName(); if (ev.key === 'Escape') updateAllUI(); };
+                };
+
+                el.onclick = (e) => {
+                    if (e.shiftKey) {
+                        if (state.selectedIds.includes(obj.id)) {
+                            state.selectedIds = state.selectedIds.filter(id => id !== obj.id);
+                            state.selectedId = state.selectedIds[state.selectedIds.length - 1] || null;
+                        } else {
+                            state.selectedIds.push(obj.id);
+                            state.selectedId = obj.id;
+                        }
+                    } else {
+                        state.selectedId = obj.id;
+                        state.selectedIds = [obj.id];
+                        state.selectedKeyId = null;
+                    }
+                    updateAllUI();
+                };
+
+                el.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    showContextMenu(e.clientX, e.clientY, obj);
+                };
+
+                list.appendChild(el);
+            });
+
+            lucide.createIcons();
+        }
+
+        // --- CONTEXT MENU (LONG PRESS / RIGHT CLICK) ---
+        const contextMenu = document.getElementById('contextMenu');
+        let activeCtxObj = null;
+
+        function showContextMenu(x, y, obj) {
+            activeCtxObj = obj;
+            state.selectedId = obj.id;
+            if (!state.selectedIds.includes(obj.id)) state.selectedIds = [obj.id];
+            updateAllUI();
+
+            contextMenu.style.left = Math.min(window.innerWidth - 200, x) + 'px';
+            contextMenu.style.top = Math.min(window.innerHeight - 150, y) + 'px';
+            contextMenu.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('ctxRename').onclick = () => {
+            contextMenu.classList.add('hidden');
+            if (!activeCtxObj) return;
+            const newName = prompt("Yeni isim:", activeCtxObj.name);
+            if (newName) {
+                activeCtxObj.name = newName;
+                updateAllUI();
+            }
+        };
+
+        document.getElementById('ctxGroup').onclick = () => {
+            contextMenu.classList.add('hidden');
+            groupSelectedObjects();
+        };
+
+        document.getElementById('ctxDelete').onclick = () => {
+            contextMenu.classList.add('hidden');
+            if (!activeCtxObj) return;
+            state.objects = state.objects.filter(o => o.id !== activeCtxObj.id);
+            state.selectedId = null;
+            state.selectedIds = [];
+            updateAllUI();
+        };
+
+        document.getElementById('btnGroupSelected').onclick = () => groupSelectedObjects();
+
+        function updatePropertiesPanel() {
+            const obj = getSelectedObj();
+            const panel = document.getElementById('propsContainer');
+            const emptyMsg = document.getElementById('noSelection');
+            const btnDel = document.getElementById('btnDeleteObj');
+            const btnCopy = document.getElementById('btnCopyObj');
+
+            if (!obj || state.selectedIds.length > 1) {
+                panel.classList.add('hidden');
+                emptyMsg.classList.remove('hidden');
+                btnDel.classList.toggle('hidden', state.selectedIds.length === 0);
+                btnCopy.classList.add('hidden');
+                if (state.selectedIds.length > 1) {
+                    emptyMsg.textContent = `${state.selectedIds.length} nesne seçildi.`;
+                } else {
+                    emptyMsg.textContent = translations[currentLang].noSel;
+                }
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            emptyMsg.classList.add('hidden');
+            btnDel.classList.remove('hidden');
+            btnCopy.classList.remove('hidden');
+
+            const p = getPropsAtTime(obj, state.time);
+            
+            const setVal = (id, val) => { const el = document.getElementById(id); if (document.activeElement !== el) el.value = val; };
+
+            setVal('propName', obj.name);
+            setVal('propX', Math.round(p.x));
+            setVal('propY', Math.round(p.y));
+            setVal('propW', Math.round(p.w));
+            setVal('propH', Math.round(p.h));
+            setVal('propRot', Math.round(p.r));
+            setVal('propOp', p.o);
+            setVal('propFill', p.fill);
+
+            const colorWrapper = document.getElementById('colorPropWrapper');
+            if (obj.type === 'image') {
+                colorWrapper.classList.add('hidden');
+            } else {
+                colorWrapper.classList.remove('hidden');
+            }
+
+            const rectProps = document.getElementById('rectProps');
+            if (obj.type === 'rect') {
+                rectProps.classList.remove('hidden');
+                const rad = Math.round(p.radius || 0);
+                setVal('propRadius', rad);
+                setVal('propRadiusRange', rad);
+            } else {
+                rectProps.classList.add('hidden');
+            }
+
+            const textProps = document.getElementById('textProps');
+            if (obj.type === 'text') {
+                textProps.classList.remove('hidden');
+                setVal('propText', p.text);
+                setVal('propFontSize', Math.round(p.fontSize));
+                setVal('propFontFamily', p.fontFamily || 'Inter');
+            } else {
+                textProps.classList.add('hidden');
+            }
+
+            const kfIndex = obj.keys.findIndex(k => k.t === roundTime(state.time));
+            const btnDelKey = document.getElementById('btnDelKey');
+            if (kfIndex !== -1) {
+                btnDelKey.classList.remove('hidden');
+                state.selectedKeyId = `${obj.id}_${roundTime(state.time)}`;
+            } else {
+                btnDelKey.classList.add('hidden');
+            }
+        }
+
+        function renderTimeline() {
+            const containerWidth = state.duration * state.zoom;
+            document.getElementById('timelineContainer').style.width = containerWidth + 'px';
+            
+            const ruler = document.getElementById('rulerTicks');
+            ruler.innerHTML = '';
+            for (let i = 0; i <= state.duration; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'ruler-tick';
+                tick.style.left = (i * state.zoom) + 'px';
+                
+                const label = document.createElement('div');
+                label.className = 'ruler-label';
+                label.style.left = (i * state.zoom) + 'px';
+                label.textContent = i + 's';
+                
+                ruler.appendChild(tick);
+                ruler.appendChild(label);
+            }
+
+            const headers = document.getElementById('trackHeaderList');
+            const lanes = document.getElementById('trackLanes');
+            headers.innerHTML = '';
+            lanes.innerHTML = '';
+
+            [...state.objects].reverse().forEach(obj => {
+                const isSelected = state.selectedIds.includes(obj.id);
+                const h = document.createElement('div');
+                h.className = `h-[40px] px-4 flex items-center text-xs border-b border-border truncate cursor-pointer font-medium transition-colors ${isSelected ? 'bg-indigo-500/15 text-indigo-500 font-bold' : 'text-textMuted hover:text-textMain hover:bg-card'}`;
+                h.textContent = obj.name;
+                h.onclick = () => { 
+                    state.selectedId = obj.id; 
+                    state.selectedIds = [obj.id];
+                    updateAllUI(); 
+                };
+                headers.appendChild(h);
+
+                const l = document.createElement('div');
+                l.className = 'track-lane';
+                
+                obj.keys.forEach(k => {
+                    const kf = document.createElement('div');
+                    const isKeySelected = state.selectedKeyId === `${obj.id}_${k.t}`;
+                    kf.className = `keyframe ${isKeySelected ? 'selected' : ''}`;
+                    kf.style.left = (k.t * state.zoom) + 'px';
+                    
+                    kf.onpointerdown = (e) => {
+                        e.stopPropagation(); e.preventDefault();
+                        state.selectedId = obj.id;
+                        state.selectedIds = [obj.id];
+                        state.selectedKeyId = `${obj.id}_${k.t}`;
+                        setTime(k.t);
+                        kf.setPointerCapture(e.pointerId);
+                        state.drag = { mode: 'keyframe', obj: obj, key: k, startX: e.clientX, origT: k.t, kfEl: kf };
+                        updateAllUI();
+                    };
+
+                    l.appendChild(kf);
+                });
+                lanes.appendChild(l);
+            });
+        }
+
+        // --- 5. INTERACTION LOGIC & SMART SNAPPING ---
+        function rotatePoint(pX, pY, cX, cY, angleDeg) {
+            const rad = angleDeg * Math.PI / 180;
+            const dx = pX - cX, dy = pY - cY;
+            return {
+                x: dx * Math.cos(rad) - dy * Math.sin(rad),
+                y: dx * Math.sin(rad) + dy * Math.cos(rad)
+            };
+        }
+
+        function getMousePos(e) {
+            const rect = UI.uiCanvas.getBoundingClientRect();
+            const scaleX = UI.uiCanvas.width / rect.width;
+            const scaleY = UI.uiCanvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function hitTest(pos) {
+            for (let i = state.objects.length - 1; i >= 0; i--) {
+                const obj = state.objects[i];
+                const p = getPropsAtTime(obj, state.time);
+                
+                const cX = p.x + p.w / 2;
+                const cY = p.y + p.h / 2;
+                const localPos = rotatePoint(pos.x, pos.y, cX, cY, -p.r);
+
+                if (state.selectedId === obj.id && state.selectedIds.length === 1) {
+                    const hw = p.w / 2, hh = p.h / 2;
+                    if (Math.abs(localPos.x) < 16 && Math.abs(localPos.y + hh + 22) < 16) return { obj, handle: 'rotate' };
+                    
+                    const corners = [
+                        { h: 'tl', cx: -hw, cy: -hh }, { h: 'tr', cx: hw, cy: -hh },
+                        { h: 'bl', cx: -hw, cy: hh }, { h: 'br', cx: hw, cy: hh }
+                    ];
+                    for (let c of corners) {
+                        if (Math.abs(localPos.x - c.cx) < 14 && Math.abs(localPos.y - c.cy) < 14) return { obj, handle: c.h };
+                    }
+                }
+
+                if (obj.type === 'circle') {
+                    const rx = p.w / 2, ry = p.h / 2;
+                    if ((localPos.x * localPos.x) / (rx * rx) + (localPos.y * localPos.y) / (ry * ry) <= 1) {
+                        return { obj, handle: 'move' };
+                    }
+                } else {
+                    if (Math.abs(localPos.x) <= p.w / 2 && Math.abs(localPos.y) <= p.h / 2) {
+                        return { obj, handle: 'move' };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function calculateSnaps(activeObjId, curProps) {
+            const SNAP_THRESHOLD = 6;
+            let snappedX = curProps.x;
+            let snappedY = curProps.y;
+            let guides = [];
+
+            const cx = curProps.x + curProps.w / 2;
+            const cy = curProps.y + curProps.h / 2;
+            const right = curProps.x + curProps.w;
+            const bottom = curProps.y + curProps.h;
+
+            state.objects.forEach(obj => {
+                if (obj.id === activeObjId) return;
+                const p = getPropsAtTime(obj, state.time);
+                const oCx = p.x + p.w / 2;
+                const oCy = p.y + p.h / 2;
+                const oRight = p.x + p.w;
+                const oBottom = p.y + p.h;
+
+                if (Math.abs(cx - oCx) < SNAP_THRESHOLD) {
+                    snappedX = oCx - curProps.w / 2;
+                    guides.push({ x1: oCx, y1: 0, x2: oCx, y2: UI.uiCanvas.height });
+                }
+                if (Math.abs(cy - oCy) < SNAP_THRESHOLD) {
+                    snappedY = oCy - curProps.h / 2;
+                    guides.push({ x1: 0, y1: oCy, x2: UI.uiCanvas.width, y2: oCy });
+                }
+                if (Math.abs(curProps.x - p.x) < SNAP_THRESHOLD) {
+                    snappedX = p.x;
+                    guides.push({ x1: p.x, y1: 0, x2: p.x, y2: UI.uiCanvas.height });
+                }
+                if (Math.abs(right - oRight) < SNAP_THRESHOLD) {
+                    snappedX = oRight - curProps.w;
+                    guides.push({ x1: oRight, y1: 0, x2: oRight, y2: UI.uiCanvas.height });
+                }
+                if (Math.abs(curProps.y - p.y) < SNAP_THRESHOLD) {
+                    snappedY = p.y;
+                    guides.push({ x1: 0, y1: p.y, x2: UI.uiCanvas.width, y2: p.y });
+                }
+                if (Math.abs(bottom - oBottom) < SNAP_THRESHOLD) {
+                    snappedY = oBottom - curProps.h;
+                    guides.push({ x1: 0, y1: oBottom, x2: UI.uiCanvas.width, y2: oBottom });
+                }
+            });
+
+            state.snapGuides = guides;
+            return { x: snappedX, y: snappedY };
+        }
+
+        let longPressTimer = null;
+
+        UI.uiCanvas.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 || state.playing) return;
+            UI.uiCanvas.setPointerCapture(e.pointerId);
+            const pos = getMousePos(e);
+
+            const hit = hitTest(pos);
+            
+            clearTimeout(longPressTimer);
+            if (hit) {
+                longPressTimer = setTimeout(() => {
+                    showContextMenu(e.clientX, e.clientY, hit.obj);
+                }, 600);
+            }
+
+            if (state.tool === 'eraser') {
+                state.drag = { mode: 'eraser', pos: pos };
+                eraseAtPos(pos);
+                return;
+            }
+
+            if (state.tool !== 'select') {
+                if (state.tool === 'image') {
+                    document.getElementById('imageUploadInput').click();
+                    return;
+                }
+
+                if (['rect', 'circle'].includes(state.tool)) {
+                    const newObj = createObject(state.tool, pos.x, pos.y);
+                    newObj.base.x = pos.x;
+                    newObj.base.y = pos.y;
+                    newObj.base.w = 1;
+                    newObj.base.h = 1;
+                    
+                    state.objects.push(newObj);
+                    state.selectedId = newObj.id;
+                    state.selectedIds = [newObj.id];
+                    setKeyframe(newObj, state.time, getPropsAtTime(newObj, state.time));
+                    
+                    state.drag = { mode: 'create', obj: newObj, startX: pos.x, startY: pos.y };
+                    updateAllUI();
+                    return;
+                }
+
+                // Instant placement of default shape
+                const newObj = createObject(state.tool, pos.x, pos.y);
+                setKeyframe(newObj, 0, newObj.base);
+                
+                if (state.tool === 'text') {
+                    state.objects.push(newObj);
+                    state.selectedId = newObj.id;
+                    state.selectedIds = [newObj.id];
+                    setKeyframe(newObj, state.time, getPropsAtTime(newObj, state.time));
+                    state.tool = 'select';
+                    updateAllUI();
+                    setTimeout(() => document.getElementById('propText').focus(), 50);
+                } else if (state.tool === 'pencil') {
+                    newObj.base.x = pos.x;
+                    newObj.base.y = pos.y;
+                    newObj.base.w = 1;
+                    newObj.base.h = 1;
+                    newObj.base.points = [[0, 0]];
+                    state.objects.push(newObj);
+                    state.selectedId = newObj.id;
+                    state.selectedIds = [newObj.id];
+                    setKeyframe(newObj, state.time, getPropsAtTime(newObj, state.time));
+                    state.drag = { mode: 'pencil', obj: newObj, startPos: pos };
+                    updateAllUI();
+                } else {
+                    state.objects.push(newObj);
+                    state.selectedId = newObj.id;
+                    state.selectedIds = [newObj.id];
+                    setKeyframe(newObj, state.time, getPropsAtTime(newObj, state.time));
+                    state.tool = 'select';
+                    updateAllUI();
+                }
+                return;
+            }
+
+            if (hit) {
+                if (!state.selectedIds.includes(hit.obj.id)) {
+                    if (e.shiftKey) {
+                        state.selectedIds.push(hit.obj.id);
+                    } else {
+                        state.selectedIds = [hit.obj.id];
+                    }
+                    state.selectedId = hit.obj.id;
+                }
+                state.selectedKeyId = null;
+                const currentProps = getPropsAtTime(hit.obj, state.time);
+                
+                state.drag = {
+                    mode: hit.handle,
+                    obj: hit.obj,
+                    startPos: pos,
+                    initProps: currentProps,
+                    offsetX: pos.x - currentProps.x,
+                    offsetY: pos.y - currentProps.y
+                };
+            } else {
+                if (!e.shiftKey) {
+                    state.selectedId = null;
+                    state.selectedIds = [];
+                }
+                state.drag = { mode: 'marquee', startX: pos.x, startY: pos.y, currX: pos.x, currY: pos.y };
+            }
+            updateAllUI();
+        });
+
+        function eraseAtPos(pos) {
+            const eraserRadius = 20;
+            state.objects = state.objects.filter(obj => {
+                const p = getPropsAtTime(obj, state.time);
+                const cX = p.x + p.w / 2;
+                const cY = p.y + p.h / 2;
+                const dist = Math.hypot(pos.x - cX, pos.y - cY);
+                return dist > eraserRadius + Math.max(p.w, p.h) / 2;
+            });
+            updateAllUI();
+        }
+
+        UI.uiCanvas.addEventListener('pointermove', (e) => {
+            if (Math.abs(e.movementX) > 2 || Math.abs(e.movementY) > 2) {
+                clearTimeout(longPressTimer);
+            }
+
+            if (!state.drag || state.drag.mode === 'keyframe') return;
+            const pos = getMousePos(e);
+            
+            if (state.drag.mode === 'eraser') {
+                eraseAtPos(pos);
+                return;
+            }
+
+            if (state.drag.mode === 'marquee') {
+                state.drag.currX = pos.x;
+                state.drag.currY = pos.y;
+                updateAllUI();
+                return;
+            }
+
+            if (state.drag.mode === 'create') {
+                const { obj, startX, startY } = state.drag;
+                let w = pos.x - startX;
+                let h = pos.y - startY;
+                
+                let newX = startX;
+                let newY = startY;
+
+                if (w < 0) { newX = pos.x; w = Math.abs(w); }
+                if (h < 0) { newY = pos.y; h = Math.abs(h); }
+
+                const newProps = { ...getPropsAtTime(obj, state.time) };
+                newProps.x = newX;
+                newProps.y = newY;
+                newProps.w = Math.max(1, w);
+                newProps.h = Math.max(1, h);
+                
+                setKeyframe(obj, state.time, newProps);
+                updateAllUI();
+                return;
+            }
+
+            const { mode, obj, startPos, initProps, offsetX, offsetY } = state.drag;
+            const newProps = { ...getPropsAtTime(obj, state.time) };
+
+            if (mode === 'pencil') {
+                if (!newProps.points) newProps.points = [[0, 0]];
+                
+                const absX = pos.x;
+                const absY = pos.y;
+                
+                let minX = newProps.x;
+                let minY = newProps.y;
+                let maxX = newProps.x + newProps.w;
+                let maxY = newProps.y + newProps.h;
+
+                if (absX < minX) minX = absX;
+                if (absY < minY) minY = absY;
+                if (absX > maxX) maxX = absX;
+                if (absY > maxY) maxY = absY;
+
+                newProps.x = minX;
+                newProps.y = minY;
+                newProps.w = Math.max(10, maxX - minX);
+                newProps.h = Math.max(10, maxY - minY);
+
+                const localPtX = absX - newProps.x;
+                const localPtY = absY - newProps.y;
+                newProps.points.push([localPtX, localPtY]);
+            }
+            else if (mode === 'move') {
+                const targetX = pos.x - offsetX;
+                const targetY = pos.y - offsetY;
+
+                const snapped = calculateSnaps(obj.id, { ...newProps, x: targetX, y: targetY });
+
+                newProps.x = snapped.x;
+                newProps.y = snapped.y;
+                setKeyframe(obj, state.time, newProps);
+            }
+            else if (['tl', 'tr', 'bl', 'br'].includes(mode)) {
+                const cX = initProps.x + initProps.w / 2;
+                const cY = initProps.y + initProps.h / 2;
+                const rad = initProps.r * Math.PI / 180;
+                
+                const cos = Math.cos(-rad), sin = Math.sin(-rad);
+                const mx = pos.x - cX;
+                const my = pos.y - cY;
+                const localMx = mx * cos - my * sin;
+                const localMy = mx * sin + my * cos;
+
+                let l = -initProps.w / 2;
+                let r = initProps.w / 2;
+                let t = -initProps.h / 2;
+                let b = initProps.h / 2;
+
+                if (mode === 'tl') { l = localMx; t = localMy; }
+                else if (mode === 'tr') { r = localMx; t = localMy; }
+                else if (mode === 'bl') { l = localMx; b = localMy; }
+                else if (mode === 'br') { r = localMx; b = localMy; }
+
+                if (r - l < 10) { if (mode === 'tl' || mode === 'bl') l = r - 10; else r = l + 10; }
+                if (b - t < 10) { if (mode === 'tl' || mode === 'tr') t = b - 10; else b = t + 10; }
+
+                newProps.w = r - l;
+                newProps.h = b - t;
+
+                const newLocalCx = (l + r) / 2;
+                const newLocalCy = (t + b) / 2;
+                
+                const cosR = Math.cos(rad), sinR = Math.sin(rad);
+                const newGlobalCx = cX + (newLocalCx * cosR - newLocalCy * sinR);
+                const newGlobalCy = cY + (newLocalCx * sinR + newLocalCy * cosR);
+
+                newProps.x = newGlobalCx - newProps.w / 2;
+                newProps.y = newGlobalCy - newProps.h / 2;
+                
+                state.snapGuides = [];
+                setKeyframe(obj, state.time, newProps);
+            }
+            else if (mode === 'rotate') {
+                const cX = initProps.x + initProps.w / 2;
+                const cY = initProps.y + initProps.h / 2;
+                const ang1 = Math.atan2(startPos.y - cY, startPos.x - cX);
+                const ang2 = Math.atan2(pos.y - cY, pos.x - cX);
+                let newRot = initProps.r + (ang2 - ang1) * 180 / Math.PI;
+
+                const SNAP_ANGLE_THRESHOLD = 5;
+                const snapAngles = [0, 90, 180, 270, 360, -90, -180, -270, -360];
+                for (let sa of snapAngles) {
+                    if (Math.abs(newRot - sa) < SNAP_ANGLE_THRESHOLD) {
+                        newRot = sa === 360 || sa === -360 ? 0 : sa;
+                        break;
+                    }
+                }
+
+                newProps.r = newRot;
+                state.snapGuides = [];
+                setKeyframe(obj, state.time, newProps);
+            }
+
+            updateAllUI();
+        });
+
+        UI.uiCanvas.addEventListener('pointerup', (e) => {
+            clearTimeout(longPressTimer);
+            if (state.drag) {
+                try { UI.uiCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
+                
+                if (state.drag.mode === 'marquee') {
+                    const m = state.drag;
+                    const rx = Math.min(m.startX, m.currX);
+                    const ry = Math.min(m.startY, m.currY);
+                    const rw = Math.abs(m.currX - m.startX);
+                    const rh = Math.abs(m.currY - m.startY);
+
+                    if (rw > 5 || rh > 5) {
+                        state.selectedIds = [];
+                        state.objects.forEach(obj => {
+                            const p = getPropsAtTime(obj, state.time);
+                            if (p.x >= rx && p.x + p.w <= rx + rw && p.y >= ry && p.y + p.h <= ry + rh) {
+                                state.selectedIds.push(obj.id);
+                            }
+                        });
+                        if (state.selectedIds.length > 0) {
+                            state.selectedId = state.selectedIds[0];
+                        }
+                    }
+                }
+
+                if (state.drag.mode === 'create') {
+                    const p = getPropsAtTime(state.drag.obj, state.time);
+                    if (p.w < 10 || p.h < 10) {
+                        const newProps = { ...p, w: 100, h: 100, x: state.drag.startX - 50, y: state.drag.startY - 50 };
+                        setKeyframe(state.drag.obj, state.time, newProps);
+                    }
+                    state.tool = 'select';
+                }
+
+                if (['pencil', 'eraser'].includes(state.drag.mode)) state.tool = 'select';
+                state.drag = null;
+                state.snapGuides = [];
+                updateAllUI();
+            }
+        });
+
+        // --- 6. IMAGE UPLOAD HANDLER ---
+        const imageUploadInput = document.getElementById('imageUploadInput');
+        imageUploadInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 250;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > maxDim) { h = (maxDim / w) * h; w = maxDim; } }
+                    else { if (h > maxDim) { w = (maxDim / h) * w; h = maxDim; } }
+
+                    const newObj = createObject('image', 400, 225, { w: Math.round(w), h: Math.round(h), src: dataUrl });
+                    imageCache.set(newObj.id, img);
+                    setKeyframe(newObj, 0, newObj.base);
+                    state.objects.push(newObj);
+                    state.selectedId = newObj.id;
+                    state.selectedIds = [newObj.id];
+                    setKeyframe(newObj, state.time, getPropsAtTime(newObj, state.time));
+                    state.tool = 'select';
+                    updateAllUI();
+                };
+                img.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+            imageUploadInput.value = '';
+        };
+
+        // --- 7. PROPERTIES BINDING & SHORTCUTS ---
+        const bindInput = (id, propKey, isNumber = false) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', (e) => {
+                const obj = getSelectedObj();
+                if (!obj) return;
+                
+                let val = e.target.value;
+                if (isNumber) {
+                    val = Number(val);
+                    if (isNaN(val)) return;
+                }
+                
+                const newProps = { ...getPropsAtTime(obj, state.time) };
+                newProps[propKey] = val;
+                
+                setKeyframe(obj, state.time, newProps);
+                updateAllUI();
+            });
+        };
+
+        document.getElementById('propName').addEventListener('input', (e) => {
+            const obj = getSelectedObj();
+            if(obj) { obj.name = e.target.value; renderLayers(); renderTimeline(); }
+        });
+
+        const radiusNum = document.getElementById('propRadius');
+        const radiusRange = document.getElementById('propRadiusRange');
+        
+        radiusRange.addEventListener('input', (e) => {
+            radiusNum.value = e.target.value;
+            const obj = getSelectedObj();
+            if (!obj) return;
+            const newProps = { ...getPropsAtTime(obj, state.time) };
+            newProps.radius = Number(e.target.value);
+            setKeyframe(obj, state.time, newProps);
+            updateAllUI();
+        });
+
+        radiusNum.addEventListener('input', (e) => {
+            radiusRange.value = e.target.value;
+            const obj = getSelectedObj();
+            if (!obj) return;
+            const newProps = { ...getPropsAtTime(obj, state.time) };
+            newProps.radius = Number(e.target.value);
+            setKeyframe(obj, state.time, newProps);
+            updateAllUI();
+        });
+
+        bindInput('propX', 'x', true); bindInput('propY', 'y', true);
+        bindInput('propW', 'w', true); bindInput('propH', 'h', true);
+        bindInput('propRot', 'r', true); bindInput('propOp', 'o', true);
+        bindInput('propFill', 'fill'); 
+        bindInput('propText', 'text'); bindInput('propFontSize', 'fontSize', true);
+        bindInput('propFontFamily', 'fontFamily');
+
+        document.getElementById('btnDeleteObj').onclick = () => {
+            if (state.selectedIds.length === 0) return;
+            state.objects = state.objects.filter(o => !state.selectedIds.includes(o.id));
+            state.selectedId = null;
+            state.selectedIds = [];
+            updateAllUI();
+        };
+
+        document.getElementById('btnCopyObj').onclick = () => {
+            copySelectedObject();
+            pasteObject();
+        };
+
+        document.getElementById('btnAddKey').onclick = () => {
+            const obj = getSelectedObj();
+            if (obj) {
+                setKeyframe(obj, state.time, getPropsAtTime(obj, state.time));
+                updateAllUI();
+            }
+        };
+
+        document.getElementById('btnDelKey').onclick = () => {
+            const obj = getSelectedObj();
+            if (obj) {
+                const t = roundTime(state.time);
+                obj.keys = obj.keys.filter(k => k.t !== t);
+                state.selectedKeyId = null;
+                updateAllUI();
+            }
+        };
+
+        // --- NEW PAGE / RESET ---
+        document.getElementById('btnNewPage').onclick = () => {
+            showMessage("Yeni Sayfa", "Yeni bir sayfa oluşturmak istediğinize emin misiniz? Kaydedilmemiş değişiklikler silinecektir.", true, () => {
+                state.objects = [];
+                state.time = 0;
+                state.selectedId = null;
+                state.selectedIds = [];
+                state.selectedKeyId = null;
+                imageCache.clear();
+                stopPlay();
+                updateAllUI();
+            });
+        };
+
+        // --- SETTINGS MODAL & THEME LOGIC ---
+        const settingsModal = document.getElementById('settingsModal');
+        const btnSettings = document.getElementById('btnSettings');
+        const btnCloseSettings = document.getElementById('btnCloseSettings');
+        const btnSaveSettings = document.getElementById('btnSaveSettings');
+        const languageSelect = document.getElementById('languageSelect');
+        const themeSelect = document.getElementById('themeSelect');
+        const toggle3dMode = document.getElementById('toggle3dMode');
+        const txt3dNotice = document.getElementById('txt3dNotice');
+
+        btnSettings.onclick = () => settingsModal.classList.remove('hidden');
+        btnCloseSettings.onclick = () => settingsModal.classList.add('hidden');
+        
+        btnSaveSettings.onclick = () => {
+            updateLanguage(languageSelect.value);
+            
+            const selectedTheme = themeSelect.value;
+            const rootEl = document.documentElement;
+            if (selectedTheme === 'light') {
+                rootEl.classList.remove('dark');
+                rootEl.classList.add('light');
+            } else {
+                rootEl.classList.remove('light');
+                rootEl.classList.add('dark');
+            }
+
+            settingsModal.classList.add('hidden');
+        };
+
+        themeSelect.onchange = (e) => {
+            const rootEl = document.documentElement;
+            if (e.target.value === 'light') {
+                rootEl.classList.remove('dark');
+                rootEl.classList.add('light');
+            } else {
+                rootEl.classList.remove('light');
+                rootEl.classList.add('dark');
+            }
+        };
+
+        toggle3dMode.onchange = (e) => {
+            if (e.target.checked) {
+                txt3dNotice.classList.remove('hidden');
+            } else {
+                txt3dNotice.classList.add('hidden');
+            }
+        };
+
+        // Save & Open Project Buttons
+        document.getElementById('btnSave').onclick = () => {
+            const projectData = {
+                version: 1,
+                duration: state.duration,
+                objects: state.objects
+            };
+            const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ffc-proje.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        const fileOpenInput = document.getElementById('fileOpenInput');
+        document.getElementById('btnOpen').onclick = () => {
+            fileOpenInput.value = '';
+            fileOpenInput.click();
+        };
+
+        fileOpenInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (data && Array.isArray(data.objects)) {
+                        state.objects = data.objects;
+                        state.duration = data.duration || 10;
+                        state.time = 0;
+                        state.selectedId = state.objects[0]?.id || null;
+                        state.selectedIds = state.selectedId ? [state.selectedId] : [];
+                        state.selectedKeyId = null;
+                        imageCache.clear();
+                        stopPlay();
+                        updateAllUI();
+                    } else {
+                        showMessage("Hata", "Geçersiz proje dosyası yapısı.");
+                    }
+                } catch (err) {
+                    showMessage("Hata", "Proje dosyası okunurken hata oluştu.");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+                copySelectedObject();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                pasteObject();
+            }
+        });
+
+        // Global pointer events for robust keyframe dragging
+        window.addEventListener('pointermove', (e) => {
+            if (state.drag?.mode === 'keyframe') {
+                const { obj, key, startX, origT, kfEl } = state.drag;
+                const dx = e.clientX - startX;
+                let newT = roundTime(origT + (dx / state.zoom));
+                newT = Math.max(0, Math.min(state.duration, newT));
+                
+                if (!obj.keys.some(other => other !== key && other.t === newT)) {
+                    key.t = newT;
+                    state.selectedKeyId = `${obj.id}_${newT}`;
+                    setTime(newT, false);
+                    kfEl.style.left = (newT * state.zoom) + 'px';
+                    updatePlayhead();
+                    renderCanvas(UI.ctx, true);
+                }
+            } else if (state.drag?.mode === 'scrub') {
+                const rect = document.getElementById('timelineContainer').getBoundingClientRect();
+                setTime((e.clientX - rect.left) / state.zoom);
+            }
+        });
+
+        window.addEventListener('pointerup', (e) => {
+            if (state.drag?.mode === 'keyframe') {
+                if (state.drag.kfEl) {
+                    try { state.drag.kfEl.releasePointerCapture(e.pointerId); } catch(err) {}
+                }
+                state.drag.obj.keys.sort((a,b) => a.t - b.t);
+                state.drag = null;
+                updateAllUI();
+            } else if (state.drag?.mode === 'scrub') {
+                state.drag = null;
+            }
+        });
+
+        // --- 8. PLAYBACK & SCRUBBING ---
+        let lastTimestamp = 0;
+        let reqAnimId = 0;
+
+        function setTime(newTime, updateFullUI = true) {
+            state.time = Math.max(0, Math.min(state.duration, newTime));
+            if (updateFullUI) {
+                updatePlayhead();
+                renderCanvas(UI.ctx, true);
+                updatePropertiesPanel();
+            }
+        }
+
+        function playLoop(timestamp) {
+            if (!state.playing) return;
+            if (lastTimestamp) {
+                const dt = (timestamp - lastTimestamp) / 1000;
+                let nextTime = state.time + (dt * state.playDirection);
+                
+                if (nextTime >= state.duration) {
+                    if (state.playDirection === 1) nextTime = 0;
+                    else { nextTime = state.duration; }
+                } else if (nextTime <= 0) {
+                    if (state.playDirection === -1) nextTime = state.duration;
+                    else { nextTime = 0; }
+                }
+                
+                setTime(nextTime, true);
+                UI.uiCtx.clearRect(0, 0, UI.uiCanvas.width, UI.uiCanvas.height);
+            }
+            lastTimestamp = timestamp;
+            reqAnimId = requestAnimationFrame(playLoop);
+        }
+
+        function togglePlay(direction = 1) {
+            if (state.playing && state.playDirection === direction) {
+                stopPlay();
+            } else {
+                state.playing = true;
+                state.playDirection = direction;
+                document.getElementById('iconPlay').classList.add('hidden');
+                document.getElementById('iconPause').classList.remove('hidden');
+                lastTimestamp = 0;
+                cancelAnimationFrame(reqAnimId);
+                reqAnimId = requestAnimationFrame(playLoop);
+            }
+        }
+
+        function stopPlay() {
+            state.playing = false;
+            document.getElementById('iconPlay').classList.remove('hidden');
+            document.getElementById('iconPause').classList.add('hidden');
+            cancelAnimationFrame(reqAnimId);
+            updateAllUI();
+        }
+
+        document.getElementById('btnPlay').onclick = () => togglePlay(1);
+        document.getElementById('btnPlayReverse').onclick = () => togglePlay(-1);
+        
+        document.getElementById('btnRestart').onclick = () => {
+            stopPlay();
+            setTime(0, true);
+        };
+
+        document.getElementById('btnStepBack').onclick = () => {
+            stopPlay();
+            setTime(state.time - 0.1, true);
+        };
+
+        document.getElementById('btnStepForward').onclick = () => {
+            stopPlay();
+            setTime(state.time + 0.1, true);
+        };
+
+        document.querySelectorAll('[data-tool]').forEach(btn => {
+            btn.onclick = () => { 
+                if (btn.dataset.tool === 'image') {
+                    document.getElementById('imageUploadInput').click();
+                    return;
+                }
+                state.tool = btn.dataset.tool; 
+                updateAllUI(); 
+            };
+        });
+
+        const rulerArea = document.getElementById('rulerArea');
+        const playheadHead = document.getElementById('playheadHead');
+
+        rulerArea.addEventListener('pointerdown', (e) => {
+            state.drag = { mode: 'scrub' };
+            const rect = document.getElementById('timelineContainer').getBoundingClientRect();
+            setTime((e.clientX - rect.left) / state.zoom);
+        });
+
+        playheadHead.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            state.drag = { mode: 'scrub' };
+        });
+
+        document.getElementById('timelineScrollArea').addEventListener('scroll', (e) => {
+            document.getElementById('trackHeaderList').scrollTop = e.target.scrollTop;
+        });
+
+        // --- 9. REAL VIDEO EXPORT (RENDER) ---
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let exportCancelled = false;
+
+        document.getElementById('btnRender').onclick = async () => {
+            if (state.objects.length === 0) {
+                showMessage("Uyarı", "Dışa aktarmak için sahneye en az bir nesne eklemelisiniz.");
+                return;
+            }
+
+            const modal = document.getElementById('exportModal');
+            const statusText = document.getElementById('exportStatusText');
+            const progressBar = document.getElementById('exportProgressBar');
+            
+            modal.classList.remove('hidden');
+            exportCancelled = false;
+            recordedChunks = [];
+
+            const stream = UI.mainCanvas.captureStream(30);
+            try {
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+            } catch (e) {
+                try {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                } catch (err) {
+                    showMessage("Hata", "Tarayıcınız video kaydını desteklemiyor.");
+                    modal.classList.add('hidden');
+                    return;
+                }
+            }
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                modal.classList.add('hidden');
+                if (exportCancelled) return;
+
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ffc-animasyon.webm';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            mediaRecorder.start();
+            stopPlay();
+
+            let exportTime = 0;
+            const fps = 30;
+            const totalDuration = state.duration;
+            const step = 1 / fps;
+
+            statusText.textContent = "Video oluşturuluyor...";
+
+            const renderStep = () => {
+                if (exportCancelled) {
+                    if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+                    return;
+                }
+
+                if (exportTime <= totalDuration) {
+                    setTime(exportTime, false);
+                    renderCanvas(UI.ctx, true, exportTime);
+                    
+                    const percent = Math.round((exportTime / totalDuration) * 100);
+                    progressBar.style.width = percent + '%';
+                    statusText.textContent = `Render ediliyor... %${percent}`;
+
+                    exportTime += step;
+                    setTimeout(renderStep, 1000 / 60);
+                } else {
+                    mediaRecorder.stop();
+                    setTime(0, true);
+                }
+            };
+
+            renderStep();
+        };
+
+        document.getElementById('btnCancelExport').onclick = () => {
+            exportCancelled = true;
+            document.getElementById('exportModal').classList.add('hidden');
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            setTime(0, true);
+        };
+
+        // Initial welcome shape
+        const welcomeObj = createObject('rect', 350, 175);
+        welcomeObj.name = "Animasyon Kutusu";
+        setKeyframe(welcomeObj, 0, welcomeObj.base);
+        state.objects.push(welcomeObj);
+        state.selectedId = welcomeObj.id;
+        state.selectedIds = [welcomeObj.id];
+
+        updateAllUI();
+    </script>
+</body>
+</html>
